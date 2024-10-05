@@ -1,2 +1,5 @@
 # Database folder path
 data
+
+# Python virtual environment folder path
+venv
