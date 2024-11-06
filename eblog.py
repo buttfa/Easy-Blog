@@ -4,52 +4,85 @@ import sys          # Use 'sys' to obtain command-line parameters
 
 
 # The path of the python virtual environment folder.
-venv_folder_path = 'venv'
+venv_folder_path = 'backend/venv'
 
-def build_environment():
+
+def build_environment() -> bool:
     """Build the python virtual environment.
     """
     # Check if the python virtual environment exists.
     if os.path.exists(venv_folder_path) and os.path.isdir(venv_folder_path):
-        print("[Easy-Blog]: The virtual environment already exists.")
-        return
+        print("[Easy-Blog:build]: The virtual environment already exists.")
+        return False
     
     # If not, create it and install the dependencies.
-    subprocess.run(f"python3 -m venv {venv_folder_path}", shell=True)
-    subprocess.run(f"source {venv_folder_path}/bin/activate && pip install -r requirements.txt && deactivate", shell=True)
+    if subprocess.run(f"python3 -m venv {venv_folder_path}", shell=True).returncode != 0:
+        print("[Easy-Blog:build]: Fail to create the virtual environment.")
+        return False
+    if subprocess.run(f"source {venv_folder_path}/bin/activate && pip install -r backend/requirements.txt && deactivate", shell=True).returncode != 0:
+        print("[Easy-Blog:build]: Fail to install the dependencies.")
+        return False
+    
+    return True
 
-def destroy_environment():
+
+def destroy_environment() -> bool:
     """Destroy the python virtual environment.
     """
-    subprocess.run(f"rm -rf {venv_folder_path}", shell=True)
+    if subprocess.run(f"rm -rf {venv_folder_path}", shell=True).returncode != 0:
+        print("[Easy-Blog:destroy]: Fail to destroy the virtual environment.")
+        return False
+    
+    return True
+
 
 def run_blog():
     """Run the blog.
     """
-    subprocess.run(f"source {venv_folder_path}/bin/activate && export FLASK_APP=app && export FLASK_ENV=development && flask run && deactivate", shell=True)
+    if subprocess.run(f"source {venv_folder_path}/bin/activate && export FLASK_APP=backend/app && export FLASK_ENV=development && flask run --debug && deactivate", shell=True).returncode != 0:
+        print("[Easy-Blog:run]: Fail to run the Flask server.")
+        return False
+
+    return True
 
 def main():
     """The main function.
     """
+
+
     # Check if the command is valid.
     if len(sys.argv) > 2:
         print("[Easy-Blog]: Invalid command.")
         return
     
+
     # If the command is build, build the virtual environment.
     if sys.argv[1] == "build":
         print("[Easy-Blog]: Building the virtual environment...")
-        build_environment()
-        print("[Easy-Blog]: Virtual environment built successfully.")
+        if build_environment():
+            print("[Easy-Blog]: Succeed to build the virtual environment.")
+            print("[Easy-Blog]: You can run the blog by typing 'python3 eblog.py run'.")
+        else:
+            print("[Easy-Blog]: Fail to build the virtual environment.")
+
+    
     # If the command is destroy, destroy the virtual environment.
     elif sys.argv[1] == "destrory":
-        print("[Easy-Blog]: Destroying the virtual environment...")
-        destroy_environment()
-        print("[Easy-Blog]: Virtual environment destroyed successfully.")
+        print("[Easy-Blog]: Destroying the environment...")
+        if destroy_environment():
+            print("[Easy-Blog]: Succeed to destroy the environment.")
+        else:
+            print("[Easy-Blog]: Fail to destroy the environment.")
+    
     # If the command is run, run the blog.
     elif sys.argv[1] == "run":
         print("[Easy-Blog]: Running the blog...")
-        run_blog()
+        if run_blog():
+            print("[Easy-Blog]: Succeed to run the blog.")
+        else:
+            print("[Easy-Blog]: Fail to run the blog.")
+
+    
     # If the command is invalid, print an error message.
     else:
         print("[Easy-Blog]: Invalid command.")
