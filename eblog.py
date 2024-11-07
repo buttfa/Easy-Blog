@@ -9,6 +9,9 @@ venv_folder_path = 'backend/venv'
 
 def build_environment() -> bool:
     """Build the python virtual environment.
+
+    Returns:
+        bool: Return True when succeed to build the environment, otherwise return False.
     """
     # Check if the python virtual environment exists.
     if os.path.exists(venv_folder_path) and os.path.isdir(venv_folder_path):
@@ -28,6 +31,9 @@ def build_environment() -> bool:
 
 def destroy_environment() -> bool:
     """Destroy the python virtual environment.
+
+    Returns:
+        bool: Return True when succeed to destrory the environment, otherwise return False.
     """
     if subprocess.run(f"rm -rf {venv_folder_path}", shell=True).returncode != 0:
         print("[Easy-Blog:destroy]: Fail to destroy the virtual environment.")
@@ -35,9 +41,11 @@ def destroy_environment() -> bool:
     
     return True
 
-
-def run_blog():
+def run_blog() -> bool:
     """Run the blog.
+
+    Returns:
+        bool: Return False when fail to run the blog.
     """
     if subprocess.run(f"source {venv_folder_path}/bin/activate && export FLASK_APP=backend/app && export FLASK_ENV=development && flask run --debug && deactivate", shell=True).returncode != 0:
         print("[Easy-Blog:run]: Fail to run the Flask server.")
