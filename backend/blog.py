@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from sqlite3 import connect
 from hashlib import sha256
+from getpass import getpass
 
 app = Flask(__name__)
 
@@ -59,12 +60,23 @@ def init_blog():
     if blogger_info is None:
         print("[Easy-Blog:init]: There is no blogger information in the user table. Please write the blogger information.")
 
+        # Get blogger's username
         blogger_user_name = input("Please input the username: ")
+        
+        # Get blogger's email
         blogger_user_email = input("Please input the email: ")
-        blogger_user_password = input("Please input the password: ")
+
+        # Get blogger's password
+        blogger_user_password_first = getpass("Please input the password: ")
+        blogger_user_password_second = getpass("Please input the password again: ")
+        while blogger_user_password_first != blogger_user_password_second:
+            blogger_user_password_first = getpass("The passwords do not match. Please input the password again: ")
+            blogger_user_password_second = getpass("Please input the password again: ")
+        blogger_user_password = blogger_user_password_first
 
         cursor_db.execute(f"insert into user(role, username, email, password) values('blogger', '{blogger_user_name}', '{blogger_user_email}', '{sha256(blogger_user_password.encode()).hexdigest()}')")
         conn_db.commit()
+        print("[Easy-Blog:init]: Succeed to write the blogger information.")
 
 @app.route('/login')
 def login():
