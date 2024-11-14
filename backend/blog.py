@@ -1,12 +1,10 @@
 from flask import Flask, render_template, request, jsonify, session
-from sqlite3 import connect
+from sqlite3 import Connection, Cursor, connect
 from hashlib import sha256
 from getpass import getpass
 
 app = Flask(__name__)
 
-conn_db = None
-cursor_db = None
 
 def dict_factory(cursor, row):
     d = {}
@@ -14,14 +12,39 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
+
+def init_db() -> tuple[Connection, Cursor]:
+    """Initialize the database.
+    """
+    # Connect to the database.
+    conn_db = connect('backend/db/blog.db')
+    conn_db.row_factory = dict_factory # Set the cursor to return the result as a dictionary.
+    cursor_db = conn_db.cursor()
+
+    # Set the secret key of the session.
+    cursor_db.execute("SELECT * FROM user WHERE role='blogger'")
+    blogger_info = cursor_db.fetchone()
+    app.secret_key = blogger_info['name'] + blogger_info['email'] + blogger_info['password']
+
+    return conn_db, cursor_db
+
+
+def close_db(conn_db:Connection, cursor_db: Cursor):
+    """Close the database.
+    """
+    if cursor_db is not None:
+        cursor_db.close()
+
+    if conn_db is not None:
+        conn_db.close()
+
+
 def init_blog():
     """First, connect to the database and initialize the tables. Secondly, check if there is blogger information in the user table. If not, request to write the relevant information.
     """
     
     # Connect to the database.
-    conn_db = connect('backend/db/blog.db')
-    conn_db.row_factory = dict_factory # Set the cursor to return the result as a dictionary.
-    cursor_db = conn_db.cursor()
+    conn_db, cursor_db = init_db()
     
     # Create tables.
     cursor_db.execute("""
@@ -86,33 +109,69 @@ def init_blog():
         conn_db.commit()
         print("[Easy-Blog:init]: Succeed to write the blogger information.")
 
-        # Set the secret key of the session.
-        cursor_db.execute("SELECT * FROM user WHERE role='blogger'")
-        blogger_info = cursor_db.fetchone()
-        app.secret_key = blogger_info['name'] + blogger_info['email'] + blogger_info['password']
+    close_db(conn_db, cursor_db)
 
 @app.route('/login', methods=['POST'])
 def login():
+    # Connect to the database.
+    conn_db, cursor_db = init_db()
+
+    # Get the user login information in jsn format
     user_json_data = request.get_json()
+
+    # Check if the user exists.
     cursor_db.execute(f"select * from user where email='{user_json_data['email']}' and password='{sha256(user_json_data['password'].encode()).hexdigest()}'")
     user_info = cursor_db.fetchone()
+
+    # If the user exists, return the {'status': 'success'}
     if user_info is not None:
         session['user_id'] = user_info['id']
+        close_db(conn_db, cursor_db)
         return jsonify({'status': 'success'})
+    
+    # If the user does not exist, return the {'status': 'fail'}
+    close_db(conn_db, cursor_db)
     return jsonify({'status': 'fail'})
 
-@app.route('/get_user_info')
+@app.route('/get_user_info', methods=['GET'])
 def get_user_info():
-    return jsonify({'status': 'fail'})
+    conn_db, cursor_db = init_db()
+    
+    user_id = session.get('user_id')
+    
+    # Check if the user is logged in.
+    if user_id is None:
+        return jsonify({'status': 'fail'})
+    
+    # Return the user information. (except the password)
+    cursor_db.execute(f"select * from user where id={user_id}")
+    user_info = cursor_db.fetchone()
+    user_info.pop('password')
+    return jsonify({'status': 'success', 'user_info': user_info})
+    
 
-@app.route('/register')
+@app.route('/register', methods=['POST'])
 def register():
-    return render_template('register.html')
+    conn_db, cursor_db = init_db()
+    user_json_data = request.get_json()
+
+    # Check if the email is already registered.
+    cursor_db.execute(f"select * from user where email='{user_json_data['email']}'")
+    user_info = cursor_db.fetchone()
+    if user_info is not None:
+        close_db(conn_db, cursor_db)
+        return jsonify({'status': 'fail'})
+
+    # Register the user.
+    cursor_db.execute(f"insert into user(role, name, email, password) values('visitor', '{user_json_data['name']}', '{user_json_data['email']}', '{sha256(user_json_data['password'].encode()).hexdigest()}')")
+    conn_db.commit()
+    return jsonify({'status': 'success'})
 
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
-    return render_template('logout.html')
+    session.clear()
+    return jsonify({'status': 'success'})
 
 init_blog()
