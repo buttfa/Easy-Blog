@@ -21,31 +21,6 @@ def init_db() -> tuple[Connection, Cursor]:
     conn_db.row_factory = dict_factory # Set the cursor to return the result as a dictionary.
     cursor_db = conn_db.cursor()
 
-    # Set the secret key of the session.
-    cursor_db.execute("SELECT * FROM user WHERE role='blogger'")
-    blogger_info = cursor_db.fetchone()
-    app.secret_key = blogger_info['name'] + blogger_info['email'] + blogger_info['password']
-
-    return conn_db, cursor_db
-
-
-def close_db(conn_db:Connection, cursor_db: Cursor):
-    """Close the database.
-    """
-    if cursor_db is not None:
-        cursor_db.close()
-
-    if conn_db is not None:
-        conn_db.close()
-
-
-def init_blog():
-    """First, connect to the database and initialize the tables. Secondly, check if there is blogger information in the user table. If not, request to write the relevant information.
-    """
-    
-    # Connect to the database.
-    conn_db, cursor_db = init_db()
-    
     # Create tables.
     cursor_db.execute("""
         create table if not exists user (
@@ -80,9 +55,13 @@ def init_blog():
             post_id integer not null,
             content text not null,
             
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      
+            foreign key(user_id) references user(id),
+            foreign key(post_id) references post(id)
         )
     """)
+
 
     # Check if there is blogger information in the user table.
     cursor_db.execute("SELECT * FROM user WHERE role='blogger'")
@@ -109,6 +88,29 @@ def init_blog():
         conn_db.commit()
         print("[Easy-Blog:init]: Succeed to write the blogger information.")
 
+    # Set the secret key of the session.
+    cursor_db.execute("SELECT * FROM user WHERE role='blogger'")
+    blogger_info = cursor_db.fetchone()
+    app.secret_key = blogger_info['name'] + blogger_info['email'] + blogger_info['password']
+
+    return conn_db, cursor_db
+
+
+def close_db(conn_db:Connection, cursor_db: Cursor):
+    """Close the database.
+    """
+    if cursor_db is not None:
+        cursor_db.close()
+
+    if conn_db is not None:
+        conn_db.close()
+
+
+def init_blog():
+    """First, connect to the database and initialize the tables. Secondly, check if there is blogger information in the user table. If not, request to write the relevant information.
+    """
+    # Initialize the database and write the blogger information.
+    conn_db, cursor_db = init_db()
     close_db(conn_db, cursor_db)
 
 @app.route('/login', methods=['POST'])
@@ -172,6 +174,89 @@ def register():
 @app.route('/logout', methods=['POST'])
 def logout():
     session.clear()
+    return jsonify({'status': 'success'})
+
+@app.route('/get_post_list', methods=['GET'])
+def get_post_list():
+    conn_db, cursor_db = init_db()
+
+    # Get all the post information
+    cursor_db.execute("select * from post")
+    post_list = cursor_db.fetchall()
+    # Only show the first 200 characters of the content
+    for post in post_list:
+        post['content'] = post['content'][:200]
+    
+    close_db(conn_db, cursor_db)
+    return jsonify({'status': 'success', 'post_list': post_list})
+
+@app.route('/get_post_info', methods=['POST'])
+def get_post_info():
+    conn_db, cursor_db = init_db()
+
+    # Get the target post id
+    post_json_data = request.get_json()
+    cursor_db.execute(f"select * from post where id='{post_json_data['post_id']}'")
+    post_info = cursor_db.fetchone()
+    
+    # Check if the post exists
+    if post_info is None:
+        close_db(conn_db, cursor_db)
+        return jsonify({'status': 'fail'})
+
+    close_db(conn_db, cursor_db)
+    return jsonify({'status': 'success', 'post_info': post_info})
+
+@app.route('/add_post', methods=['POST'])
+def add_post():
+    conn_db, cursor_db = init_db()
+
+    user_id = session.get('user_id')
+    # Check if the user is logged in.
+    if user_id is None:
+        close_db(conn_db, cursor_db)
+        return jsonify({'status': 'fail'})
+    
+    # Check if the user is blogger.
+    cursor_db.execute(f"select * from user where id={user_id}")
+    user_info = cursor_db.fetchone()
+    if user_info == None or (user_info['role'] != 'blogger' and user_info['role'] != 'manager'):
+        close_db(conn_db, cursor_db)
+        return jsonify({'status': 'fail'})
+    
+    # Get the post information in json format and add the post.
+    post_json_data = request.get_json()
+    cursor_db.execute(f"insert into post(title, author, content) values('{post_json_data['title']}', '{post_json_data['author']}', '{post_json_data['content']}')")
+    conn_db.commit()
+
+    close_db(conn_db, cursor_db)
+    return jsonify({'status': 'success'})
+
+@app.route('/delete_post', methods=['POST'])
+def delete_post():
+    conn_db, cursor_db = init_db()
+
+    # Get the target user id
+    user_id = session.get('user_id')
+    # Check if the user is logged in.
+    if user_id is None:
+        close_db(conn_db, cursor_db)
+        return jsonify({'status': 'fail'})
+    
+
+    # Check if the user is blogger or manager.
+    cursor_db.execute(f"select * from user where id={user_id}")
+    user_info = cursor_db.fetchone()
+    if user_info == None or (user_info['role'] != 'blogger' and user_info['role'] != 'manager'):
+        close_db(conn_db, cursor_db)
+        return jsonify({'status': 'fail'})
+    
+    # Get the post information in json format and delete the post.
+    post_json_data = request.get_json()
+    cursor_db.execute(f"delete from post where id={post_json_data['post_id']}")
+    conn_db.commit()
+    
+    close_db(conn_db, cursor_db)
     return jsonify({'status': 'success'})
 
 init_blog()
