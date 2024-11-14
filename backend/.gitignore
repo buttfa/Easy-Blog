@@ -1,0 +1,8 @@
+# Database folder path
+db
+
+# Python virtual environment folder path
+venv
+
+# Python compiled files
+__pycache__
