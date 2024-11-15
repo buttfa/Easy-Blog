@@ -283,4 +283,31 @@ def update_post_info():
     close_db(conn_db, cursor_db)
     return jsonify({'status': 'success'})
 
+
+@app.route('/get_comment_list', methods=['POST'])
+def get_comment_list():
+    conn_db, cursor_db = init_db()
+    
+    post_json_data = request.get_json()
+    cursor_db.execute(f"select * from comment where post_id={post_json_data['id']}")
+    comment_list = cursor_db.fetchall()
+    close_db(conn_db, cursor_db)
+    return jsonify({'status': 'success', 'comment_list': comment_list})
+
+@app.route('/add_comment', methods=['POST'])
+def add_comment():
+    conn_db, cursor_db = init_db()
+
+    user_id = session.get('user_id')
+    # Check if the user is logged in.
+    if user_id is None:
+        close_db(conn_db, cursor_db)
+        return jsonify({'status': 'fail'})
+    
+    comment_json_data = request.get_json()
+    cursor_db.execute(f"insert into comment(post_id, user_id, content) values({comment_json_data['id']}, {user_id}, '{comment_json_data['content']}')")
+    conn_db.commit()
+    close_db(conn_db, cursor_db)
+    return jsonify({'status': 'success'})
+
 init_blog()
