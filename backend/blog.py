@@ -196,7 +196,7 @@ def get_post_info():
 
     # Get the target post id
     post_json_data = request.get_json()
-    cursor_db.execute(f"select * from post where id='{post_json_data['post_id']}'")
+    cursor_db.execute(f"select * from post where id='{post_json_data['id']}'")
     post_info = cursor_db.fetchone()
     
     # Check if the post exists
@@ -253,9 +253,33 @@ def delete_post():
     
     # Get the post information in json format and delete the post.
     post_json_data = request.get_json()
-    cursor_db.execute(f"delete from post where id={post_json_data['post_id']}")
+    cursor_db.execute(f"delete from post where id={post_json_data['id']}")
     conn_db.commit()
     
+    close_db(conn_db, cursor_db)
+    return jsonify({'status': 'success'})
+
+@app.route('/update_post_info', methods=['POST'])
+def update_post_info():
+    conn_db, cursor_db = init_db()
+
+    user_id = session.get('user_id')
+    # Check if the user is logged in.
+    if user_id is None:
+        close_db(conn_db, cursor_db)
+        return jsonify({'status': 'fail'})
+    
+    # Check if the user is blogger or manager.
+    cursor_db.execute(f"select * from user where id={user_id}")
+    user_info = cursor_db.fetchone()
+    if user_info == None or (user_info['role'] != 'blogger' and user_info['role'] != 'manager'):
+        close_db(conn_db, cursor_db)
+        return jsonify({'status': 'fail'})
+    
+    # Get the post information in json format and update the post.
+    post_json_data = request.get_json()
+    cursor_db.execute(f"update post set title='{post_json_data['title']}', author='{post_json_data['author']}', content='{post_json_data['content']}' where id={post_json_data['id']}")
+    conn_db.commit()
     close_db(conn_db, cursor_db)
     return jsonify({'status': 'success'})
 
