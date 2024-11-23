@@ -1,4 +1,3 @@
-
 <template>
-    <router-view />
+    关于
 </template>
