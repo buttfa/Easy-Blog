@@ -11,6 +11,8 @@
 import axios from 'axios';
 axios.defaults.withCredentials = true;
 
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+
 export default {
 
     data() {
@@ -21,15 +23,43 @@ export default {
     },
 
     methods: {
-        login() {
+        login() { 
             console.log(this.email, this.password)
             axios.post('http://127.0.0.1:5000/login', {
                 email: this.email,
                 password: this.password
             })
                 .then(res => {
-                    window.location.href = "/";
+
+                    // If login fails, display 'login failure' and clear the content of the login input box.
+                    if (res.data['status'] == "fail") {
+                        this.email = '',
+                        this.password = '',
+                        this.login_fail()
+                    }
+
+                    // If the login is successful, it will display 'login successfully' and return to the main page.
+                    if (res.data['status'] == "success") {
+                        this.login_success()
+                        window.location.href = "/";
+                    }
                 })
+        },
+
+        login_success () {
+            ElMessage({
+                type: 'success',
+                message: '登录成功',
+                showClose: true
+            })  
+        },
+
+        login_fail () {
+            ElMessage({
+                type: 'fail',
+                message: '登录失败',
+                showClose: true
+            })
         }
     }
 }
