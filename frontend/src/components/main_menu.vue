@@ -1,39 +1,51 @@
 <template>
     <el-menu mode="horizontal" :default-active="main_menu_activate_index" background-color="#545c64" text-color="#fff"
         active-text-color="#ffd04b">
-        <el-menu-item index="1-0">
-            {{ blogger_info['name'] }}的博客
+        <el-menu-item index="1">
+            <a href="/" style="color: white; text-decoration: none"> {{ blogger_info['name'] }}的博客 </a>
         </el-menu-item>
 
-        <el-menu-item index="2-0" v-if="Object.keys(user_info).length == 0">
-            <a href="/login"> 登录 </a>
-        </el-menu-item>
-
-        <el-sub-menu index="2-0" v-else>
-            <template #title> {{ user_info['name'] }} </template>
-
+        <el-sub-menu index="2" v-if="Object.keys(user_info).length == 0">
+            <template #title> 
+                <a href="/login" style="color:white; text-decoration: none"> 登录 </a>
+            </template>
+            
             <el-menu-item index="2-1">
-                <a href="/user_info"> 用户信息 </a>
-            </el-menu-item>
-
-            <el-menu-item index="2-2">
-                <a href="/logout"> 登出 </a>
+                 <a href="/register" style="color:white; text-decoration: none"> 注册 </a>
             </el-menu-item>
         </el-sub-menu>
 
-        <el-menu-item index="3-0">
-            <a href="/about"> 关于 </a>
+        <el-sub-menu index="2" v-else>
+            <template #title> {{ user_info['name'] }} </template>
+
+            <el-menu-item index="2-1">
+                <a href="/user_info" style="color: white; text-decoration: none"> 用户信息 </a>
+            </el-menu-item>
+
+            <el-menu-item index="2-3" v-if="blogger_info['user_id'] == user_info['user_id']">
+                <a href="/post_management" style="color: white; text-decoration: none"> 博文管理 </a> 
+            </el-menu-item>
+
+            <el-menu-item index="2-2">
+                <a href="/logout" style="color: white; text-decoration: none"> 登出 </a>
+            </el-menu-item>
+        </el-sub-menu>
+
+        <el-menu-item index="3">
+            <a href="/about" style="text-decoration: none"> 关于 </a>
         </el-menu-item>
     </el-menu>
 </template>
 
 <script>
+import { reactive, ref } from 'vue'
+
 import axios from 'axios';
 axios.defaults.withCredentials = true;
 export default {
     data() {
         return {
-            main_menu_activate_index: '1-0',
+            main_menu_activate_index: ref("1"),
             blogger_info: {},
             user_info: {}
         }

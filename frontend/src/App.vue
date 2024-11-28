@@ -1,15 +1,14 @@
 <template>
-    <main_navigation_bar />
+    <main_menu />
     <router-view />
 </template>
 
 
 <script>
-import main_navigation_bar from './components/main_navigation_bar.vue'
-
+import main_menu from './components/main_menu.vue'
 export default {
     components: {
-        main_navigation_bar
+        main_menu
     }
 }
 </script>
