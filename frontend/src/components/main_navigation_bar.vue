@@ -25,9 +25,6 @@
             <a href="/about"> 关于 </a>
         </el-menu-item>
     </el-menu>
-
-
-    <li v-for="post in post_list" :key="post['id']">{{ post['title'] }} {{ post['author'] }} {{ post['content'] }}</li>
 </template>
 
 <script>
@@ -38,15 +35,13 @@ export default {
         return {
             main_menu_activate_index: '1-0',
             blogger_info: {},
-            user_info: {},
-            post_list: {}
+            user_info: {}
         }
     },
 
     mounted() {
         this.get_blogger_info(),
-            this.get_user_info(),
-            this.get_post_list()
+            this.get_user_info()
     },
 
     methods: {
@@ -63,15 +58,6 @@ export default {
                         this.user_info = res.data['user_info']
                     }
                 })
-        },
-        get_post_list() {
-            axios.post('http://127.0.0.1:5000/get_post_list')
-                .then(res => {
-                    this.post_list = res.data['post_list']
-                })
-        },
-        navigate_to(route_name) {
-            router.push({ name: route_name })
         }
     }
 }

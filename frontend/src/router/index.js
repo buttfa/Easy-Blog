@@ -1,9 +1,9 @@
-import {createRouter, createWebHistory} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
     {
         path: '/',
-        component: () => import("../views/index.vue")
+        component: () => import("../views/post_list.vue")
     },
     {
         path: '/about',

@@ -1,5 +1,5 @@
 <template>
-    <h3> 用户编号：{{ user_info['id'] }} </h3>
+    <h3> 用户编号：{{ user_info['user_id'] }} </h3>
     <h3> 用户名称：{{ user_info['name'] }} </h3>
     <h3> 邮箱：{{ user_info['email'] }} </h3>
     <h3> 身份：{{ user_info['role'] }} </h3>

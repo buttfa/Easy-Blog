@@ -14,11 +14,8 @@ export default {
         logout() {
             axios.post('http://127.0.0.1:5000/logout')
                 .then(res => {
-                    this.return_to_index()
+                    window.location.href = "/";
                 })
-        },
-        return_to_index() {
-            window.location.href = "/";
         }
     }
 }
