@@ -324,8 +324,18 @@ def get_comment_list():
     conn_db, cursor_db = init_db()
 
     post_json_data = request.get_json()
-    cursor_db.execute(f"select * from comment where post_id={post_json_data['id']}")
+    cursor_db.execute(
+        f"select * from comment where post_id={post_json_data['post_id']}"
+    )
     comment_list = cursor_db.fetchall()
+
+    # Add corresponding user names to each comment.
+    for comment in comment_list:
+        # Obtain username through user_id.
+        cursor_db.execute(f"select * from user where user_id='{comment['user_id']}'")
+        user_info = cursor_db.fetchone()
+        comment["name"] = user_info["name"]
+
     close_db(conn_db, cursor_db)
     return jsonify({"status": "success", "comment_list": comment_list})
 

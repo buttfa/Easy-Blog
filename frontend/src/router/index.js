@@ -32,6 +32,10 @@ const routes = [
     {
         path: '/post_management/update_post',
         component: () => import("../views/post_management/update_post.vue")
+    },
+    {
+        path: '/post',
+        component: () => import("../views/post.vue")
     }
 ]
 

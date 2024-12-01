@@ -1,5 +1,7 @@
 <template>
-    <li v-for="post in post_list" :key="post['[post_id']">{{ post['title'] }} {{ post['author'] }} {{ post['content'] }}
+    <li v-for="post in post_list" :key="post['[post_id']">
+        <a :href="'/post?post_id=' + post['post_id']"> {{ post['title'] }} </a>
+        {{ post['author'] }} {{ post['content'] }}
     </li>
 </template>
 
