@@ -283,7 +283,7 @@ def delete_post():
 
     # Get the post information in json format and delete the post.
     post_json_data = request.get_json()
-    cursor_db.execute(f"delete from post where post_id={post_json_data['id']}")
+    cursor_db.execute(f"delete from post where post_id={post_json_data['post_id']}")
     conn_db.commit()
 
     close_db(conn_db, cursor_db)
@@ -312,7 +312,7 @@ def update_post_info():
     # Get the post information in json format and update the post.
     post_json_data = request.get_json()
     cursor_db.execute(
-        f"update post set title='{post_json_data['title']}', author='{post_json_data['author']}', content='{post_json_data['content']}' where id={post_json_data['id']}"
+        f"update post set title='{post_json_data['title']}', author='{post_json_data['author']}', content='{post_json_data['content']}' where post_id={post_json_data['post_id']}"
     )
     conn_db.commit()
     close_db(conn_db, cursor_db)

@@ -1,5 +1,6 @@
 # Backend framework
 flask
+flask-cors
 
 # WSGI server
 uWSGI

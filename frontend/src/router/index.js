@@ -20,6 +20,18 @@ const routes = [
     {
         path: '/logout',
         component: () => import("../views/logout.vue")
+    },
+    {
+        path: '/post_management',
+        component: () => import("../views/post_management.vue") 
+    },
+    {
+        path: '/post_management/add_post',
+        component: () => import("../views/post_management/add_post.vue")
+    },
+    {
+        path: '/post_management/update_post',
+        component: () => import("../views/post_management/update_post.vue")
     }
 ]
 
