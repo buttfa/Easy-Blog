@@ -163,7 +163,7 @@ def main():
         linux_release_name = sys.argv[2]
         if build_environment(linux_release_name):
             print("[Easy-Blog]: Succeed to build the Easy-Blog environment.")
-            print("[Easy-Blog]: You can run the blog by typing 'python3 eblog.py run'.")
+            print("[Easy-Blog]: You can run the blog by typing 'python eblog.py run'.")
         else:
             print("[Easy-Blog]: Fail to build the Easy-Blog environment.")
 

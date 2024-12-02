@@ -16,7 +16,7 @@
 ## Usage
 #### 1. Download the project
 ```
-git clone https://github.com/buttfa/Easy-Blog.git ~/
+git clone https://github.com/buttfa/Easy-Blog.git ~/Easy-Blog
 ```
 #### 2. Enter the project directory
 ```
