@@ -1,20 +1,57 @@
-import os           # Use 'os' to determine whether the virtual environment folder exists
-import subprocess   # Use 'subprocess' to execute shell commands
-import sys          # Use 'sys' to obtain command-line parameters
+import os  # Use 'os' to determine whether the virtual environment folder exists
+import subprocess  # Use 'subprocess' to execute shell commands
+import sys  # Use 'sys' to obtain command-line parameters
 import threading
 
 
 # The path of the python virtual environment folder.
-venv_folder_path = 'backend/venv'
+venv_folder_path = "backend/venv"
 # The path of the database folder.
-db_folder_path = 'backend/db'
+db_folder_path = "backend/db"
+# system_de
+system_dependencies = {"centos": {"node.js": "sudo yum install nodejs"}}
 
-def build_environment() -> bool:
-    """Build the python virtual environment.
+
+def build_system_dependencies(linux_release_name: str) -> bool:
+    """Build the system dependencies.
+
+    Args:
+        linux_release_name (str): Current Linux system release name.
 
     Returns:
-        bool: Return True when succeed to build the environment, otherwise return False.
+        bool: Return True indicates a successful build, while return False indicates a failed build.
     """
+    for dependencies_name, dependencies_cmd in system_dependencies[
+        linux_release_name
+    ].items():
+        if subprocess.run(dependencies_cmd, shell=True).returncode != 0:
+            print(f"[Easy-Blog:build]: Fail to install {dependencies_name}")
+            return False
+
+    return True
+
+
+def build_fronted() -> bool:
+    """Build the frontend of the blog.
+
+    Returns:
+        bool: Return True indicates a successful build, while return False indicates a failed build.
+    """
+    # Install the dependencies of the frontend.
+    if subprocess.run("cd frontend && npm install", shell=True).returncode != 0:
+        print("[Easy-Blog:build]: Fail to install the dependencies of the frontend.")
+        return False
+
+    return True
+
+
+def build_backend() -> bool:
+    """Build the backend of the blog.
+
+    Returns:
+        bool: Return True indicates a successful build, while return False indicates a failed build.
+    """
+
     # Create the database folder.
     if os.path.exists(db_folder_path) and os.path.isdir(db_folder_path):
         print("[Easy-Blog:build]: The database folder already exists.")
@@ -23,50 +60,80 @@ def build_environment() -> bool:
 
     # Check if the python virtual environment exists.
     if os.path.exists(venv_folder_path) and os.path.isdir(venv_folder_path):
-        print("[Easy-Blog:build]: The virtual environment already exists.")
+        print("[Easy-Blog:build]: The virtual python environment already exists.")
         return False
-    
+
     # If not, create it and install the dependencies.
-    if subprocess.run(f"python3 -m venv {venv_folder_path}", shell=True).returncode != 0:
-        print("[Easy-Blog:build]: Fail to create the virtual environment.")
+    if (
+        subprocess.run(f"python3 -m venv {venv_folder_path}", shell=True).returncode
+        != 0
+    ):
+        print("[Easy-Blog:build]: Fail to create the virtual python environment.")
         return False
-    if subprocess.run(f"source {venv_folder_path}/bin/activate && pip install -r backend/requirements.txt && deactivate", shell=True).returncode != 0:
-        print("[Easy-Blog:build]: Fail to install the dependencies.")
+    if (
+        subprocess.run(
+            f"source {venv_folder_path}/bin/activate && pip install -r backend/requirements.txt && deactivate",
+            shell=True,
+        ).returncode
+        != 0
+    ):
+        print("[Easy-Blog:build]: Fail to install the python dependencies.")
         return False
-    
-    # Install the dependencies of the frontend.
-    if subprocess.run("cd frontend && npm install", shell=True).returncode != 0:
-        print("[Easy-Blog:build]: Fail to install the dependencies of the frontend.")
+
+    return True
+
+
+def build_environment(linux_release_name: str) -> bool:
+    """Build the Easy-Blog environment.
+
+    Args:
+        linux_release_name (str): Current Linux system release name.
+
+    Returns:
+        bool: Return True when succeed to build the environment, otherwise return False.
+    """
+
+    if not build_system_dependencies(linux_release_name):
         return False
-    
+
+    if not build_fronted():
+        return False
+
+    if not build_backend():
+        return False
+
     return True
 
 
 def destroy_environment() -> bool:
-    """Destroy the python virtual environment.
+    """Destroy the Easy-Blog environment.
 
     Returns:
         bool: Return True when succeed to destrory the environment, otherwise return False.
     """
     if subprocess.run(f"rm -rf {venv_folder_path}", shell=True).returncode != 0:
-        print("[Easy-Blog:destroy]: Fail to delete the virtual environment.")
+        print("[Easy-Blog:destroy]: Fail to delete the virtual python environment.")
         return False
-    
+
     if subprocess.run(f"rm -rf {db_folder_path}", shell=True).returncode != 0:
         print("[Easy-Blog:destroy]: Fail to delete the database.")
         return False
-    
+
     return True
 
+
 def run_frontend():
-    """Run the frontend.
-    """
-    subprocess.run("cd frontend && npx vite --port=4000", shell=True)
+    """Run the frontend."""
+    subprocess.run("cd frontend && npx vite --port=5173", shell=True)
+
 
 def run_backend():
-    """Run the backend.
-    """
-    subprocess.run(f"source {venv_folder_path}/bin/activate && export FLASK_APP=backend/blog && export FLASK_ENV=development && flask run --debug && deactivate", shell=True)
+    """Run the backend."""
+    subprocess.run(
+        f"source {venv_folder_path}/bin/activate && export FLASK_APP=backend/blog && export FLASK_ENV=development && flask run --debug && deactivate",
+        shell=True,
+    )
+
 
 def run_blog() -> bool:
     """Run the blog.
@@ -86,42 +153,36 @@ def run_blog() -> bool:
 
     return True
 
+
 def main():
-    """The main function.
-    """
-    # Check if the command is valid.
-    if len(sys.argv) > 2:
-        print("[Easy-Blog]: Invalid command.")
-        return
-    
+    """The main function."""
 
     # If the command is build, build the virtual environment.
-    if sys.argv[1] == "build":
-        print("[Easy-Blog]: Building the virtual environment...")
-        if build_environment():
-            print("[Easy-Blog]: Succeed to build the environment.")
+    if len(sys.argv) == 3 and sys.argv[1] == "build":
+        print("[Easy-Blog]: Building the Easy-Blog environment...")
+        linux_release_name = sys.argv[2]
+        if build_environment(linux_release_name):
+            print("[Easy-Blog]: Succeed to build the Easy-Blog environment.")
             print("[Easy-Blog]: You can run the blog by typing 'python3 eblog.py run'.")
         else:
-            print("[Easy-Blog]: Fail to build the virtual environment.")
+            print("[Easy-Blog]: Fail to build the Easy-Blog environment.")
 
-    
     # If the command is destroy, destroy the virtual environment.
-    elif sys.argv[1] == "destrory":
-        print("[Easy-Blog]: Destroying the environment...")
+    elif len(sys.argv) == 2 and sys.argv[1] == "destrory":
+        print("[Easy-Blog]: Destroying the Easy-Blog environment...")
         if destroy_environment():
-            print("[Easy-Blog]: Succeed to destroy the environment.")
+            print("[Easy-Blog]: Succeed to destroy the Easy-Blog environment.")
         else:
-            print("[Easy-Blog]: Fail to destroy the environment.")
-    
+            print("[Easy-Blog]: Fail to destroy the Easy-Blog environment.")
+
     # If the command is run, run the blog.
-    elif sys.argv[1] == "run":
+    elif len(sys.argv) == 2 and sys.argv[1] == "run":
         print("[Easy-Blog]: Running the blog...")
         if run_blog():
             print("[Easy-Blog]: Succeed to run the blog.")
         else:
             print("[Easy-Blog]: Fail to run the blog.")
 
-    
     # If the command is invalid, print an error message.
     else:
         print("[Easy-Blog]: Invalid command.")
