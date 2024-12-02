@@ -33,3 +33,7 @@ sudo python eblog.py build centos
 ```
 python eblog.py run
 ```
+#### 5. Destrory the project
+```
+sudo python eblog.py destroy
+```
