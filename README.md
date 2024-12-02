@@ -33,7 +33,7 @@ python eblog.py build centos
 ```
 python eblog.py run
 ```
-#### 5. Destrory the project
+#### 5. Destroy the project
 ```
 python eblog.py destroy
 ```

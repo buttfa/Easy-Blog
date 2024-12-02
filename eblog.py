@@ -109,7 +109,7 @@ def destroy_environment() -> bool:
     """Destroy the Easy-Blog environment.
 
     Returns:
-        bool: Return True when succeed to destrory the environment, otherwise return False.
+        bool: Return True when succeed to destroy the environment, otherwise return False.
     """
     if subprocess.run(f"rm -rf {venv_folder_path}", shell=True).returncode != 0:
         print("[Easy-Blog:destroy]: Fail to delete the virtual python environment.")
@@ -168,7 +168,7 @@ def main():
             print("[Easy-Blog]: Fail to build the Easy-Blog environment.")
 
     # If the command is destroy, destroy the virtual environment.
-    elif len(sys.argv) == 2 and sys.argv[1] == "destrory":
+    elif len(sys.argv) == 2 and sys.argv[1] == "destroy":
         print("[Easy-Blog]: Destroying the Easy-Blog environment...")
         if destroy_environment():
             print("[Easy-Blog]: Succeed to destroy the Easy-Blog environment.")
