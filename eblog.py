@@ -57,7 +57,6 @@ def build_backend() -> bool:
         print("[Easy-Blog:build]: The database folder already exists.")
         return False
     os.mkdir(db_folder_path)
-    subprocess.run(f"chmod 777 {db_folder_path}", shell=True)
 
     # Check if the python virtual environment exists.
     if os.path.exists(venv_folder_path) and os.path.isdir(venv_folder_path):

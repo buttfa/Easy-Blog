@@ -27,7 +27,7 @@ cd ~/Easy-Blog
 > [!CAUTION]
 > This instruction can be used to build the environment required for Easy Blog using the eblog.by script, and we have tried our best to avoid any impact on the system environment. If you have extremely high requirements for the system environment, please personally check the script or manually build the environment required for Easy Blog.
 ```
-sudo python eblog.py build centos
+python eblog.py build centos
 ```
 #### 4. Run the project in development mode
 ```
@@ -35,5 +35,5 @@ python eblog.py run
 ```
 #### 5. Destrory the project
 ```
-sudo python eblog.py destroy
+python eblog.py destroy
 ```
