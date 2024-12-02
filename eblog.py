@@ -9,7 +9,7 @@ venv_folder_path = "backend/venv"
 # The path of the database folder.
 db_folder_path = "backend/db"
 # system_de
-system_dependencies = {"centos": {"node.js": "sudo yum install nodejs"}}
+system_dependencies = {"centos": {"node.js": "sudo yum install nodejs", "gcc": "sudo yum install gcc", "python3-devel":"sudo yum install python3-devel"}}
 
 
 def build_system_dependencies(linux_release_name: str) -> bool:
