@@ -72,7 +72,7 @@ def build_backend() -> bool:
         return False
     if (
         subprocess.run(
-            f"source {venv_folder_path}/bin/activate && pip install -r backend/requirements.txt && deactivate",
+            f"bash -c 'source {venv_folder_path}/bin/activate && pip install -r backend/requirements.txt && deactivate'",
             shell=True,
         ).returncode
         != 0
@@ -130,7 +130,7 @@ def run_frontend():
 def run_backend():
     """Run the backend."""
     subprocess.run(
-        f"source {venv_folder_path}/bin/activate && export FLASK_APP=backend/blog && export FLASK_ENV=development && flask run --debug && deactivate",
+        f"bash -c 'source {venv_folder_path}/bin/activate && export FLASK_APP=backend/blog && export FLASK_ENV=development && flask run --debug && deactivate'",
         shell=True,
     )
 
