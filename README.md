@@ -4,6 +4,7 @@
 - [Project Name](#project-name)
 - [Project Introduction](#project-introduction)
 - [Usage](#usage)
+- [Supported System](#supported-system)
 
 ## Project Name
 #### Easy-Blog
@@ -37,3 +38,8 @@ python eblog.py run
 ```
 python eblog.py destroy
 ```
+
+## Supported System
+|Build command|Supported System|
+|:-|:-|
+|python eblog.py build centos|CentOS-9-Stream-x64|
