@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from sqlite3 import Connection, Cursor, connect
 from hashlib import sha256
-from getpass import getpass
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -15,7 +14,7 @@ def dict_factory(cursor, row):
     return d
 
 
-def init_db() -> tuple[Connection, Cursor]:
+def open_db() -> tuple[Connection, Cursor]:
     """Initialize the database."""
     # Connect to the database.
     conn_db = connect("backend/db/blog.db")
@@ -24,84 +23,13 @@ def init_db() -> tuple[Connection, Cursor]:
     )
     cursor_db = conn_db.cursor()
 
-    # Create tables.
-    cursor_db.execute("""
-        create table if not exists user (
-            user_id integer primary key autoincrement,
-            role text not null,
-
-            name text not null,
-                      
-            email text not null unique,
-            password text not null,
-                      
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    cursor_db.execute("""
-        create table if not exists post (
-            post_id integer primary key autoincrement,
-            
-            title text not null,
-            author text not null,
-            content text not null,
-            
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
-    cursor_db.execute("""
-        create table if not exists comment (
-            comment_id integer primary key autoincrement,
-            
-            user_id integer not null,
-            post_id integer not null,
-            content text not null,
-            
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                      
-            foreign key(user_id) references user(user_id),
-            foreign key(post_id) references post(post_id)
-        )
-    """)
-
-    # Check if there is blogger information in the user table.
-    cursor_db.execute("SELECT * FROM user WHERE role='blogger'")
-    blogger_info = cursor_db.fetchone()
-    if blogger_info is None:
-        print(
-            "[Easy-Blog:init]: There is no blogger information in the user table. Please write the blogger information."
-        )
-
-        # Get blogger's name
-        blogger_user_name = input("Please input the name: ")
-
-        # Get blogger's email
-        blogger_user_email = input("Please input the email: ")
-
-        # Get blogger's password
-        blogger_user_password_first = getpass("Please input the password: ")
-        blogger_user_password_second = getpass("Please input the password again: ")
-        while blogger_user_password_first != blogger_user_password_second:
-            blogger_user_password_first = getpass(
-                "The passwords do not match. Please input the password again: "
-            )
-            blogger_user_password_second = getpass("Please input the password again: ")
-        blogger_user_password = blogger_user_password_first
-
-        # Write the blogger information into the user table.
-        cursor_db.execute(
-            f"insert into user(role, name, email, password) values('blogger', '{blogger_user_name}', '{blogger_user_email}', '{sha256(blogger_user_password.encode()).hexdigest()}')"
-        )
-        conn_db.commit()
-        print("[Easy-Blog:init]: Succeed to write the blogger information.")
-
     # Set the secret key of the session.
-    cursor_db.execute("SELECT * FROM user WHERE role='blogger'")
-    blogger_info = cursor_db.fetchone()
-    app.secret_key = (
-        blogger_info["name"] + blogger_info["email"] + blogger_info["password"]
-    )
+    if app.secret_key is None:
+        cursor_db.execute("SELECT * FROM user WHERE role='blogger'")
+        blogger_info = cursor_db.fetchone()
+        app.secret_key = (
+            blogger_info["name"] + blogger_info["email"] + blogger_info["password"]
+        )
 
     return conn_db, cursor_db
 
@@ -118,14 +46,14 @@ def close_db(conn_db: Connection, cursor_db: Cursor):
 def init_blog():
     """First, connect to the database and initialize the tables. Secondly, check if there is blogger information in the user table. If not, request to write the relevant information."""
     # Initialize the database and write the blogger information.
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
     close_db(conn_db, cursor_db)
 
 
 @app.route("/login", methods=["POST"])
 def login():
     # Connect to the database.
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
 
     # Get the user login information in jsn format
     user_json_data = request.get_json()
@@ -149,7 +77,7 @@ def login():
 
 @app.route("/get_blogger_info", methods=["POST"])
 def get_blogger_info():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
     cursor_db.execute("select * from user where role='blogger'")
     blogger_info = cursor_db.fetchone()
     return jsonify({"status": "success", "blogger_info": blogger_info})
@@ -157,7 +85,7 @@ def get_blogger_info():
 
 @app.route("/get_user_info", methods=["POST"])
 def get_user_info():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
 
     user_id = session.get("user_id")
 
@@ -174,7 +102,7 @@ def get_user_info():
 
 @app.route("/register", methods=["POST"])
 def register():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
     user_json_data = request.get_json()
 
     # Check if the email is already registered.
@@ -200,7 +128,7 @@ def logout():
 
 @app.route("/get_post_list", methods=["POST"])
 def get_post_list():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
 
     # Get all the post information
     cursor_db.execute("select * from post")
@@ -215,7 +143,7 @@ def get_post_list():
 
 @app.route("/get_post_info", methods=["POST"])
 def get_post_info():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
 
     # Get the target post id
     post_json_data = request.get_json()
@@ -233,7 +161,7 @@ def get_post_info():
 
 @app.route("/add_post", methods=["POST"])
 def add_post():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
 
     user_id = session.get("user_id")
     # Check if the user is logged in.
@@ -263,7 +191,7 @@ def add_post():
 
 @app.route("/delete_post", methods=["POST"])
 def delete_post():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
 
     # Get the target user id
     user_id = session.get("user_id")
@@ -292,7 +220,7 @@ def delete_post():
 
 @app.route("/update_post_info", methods=["POST"])
 def update_post_info():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
 
     user_id = session.get("user_id")
     # Check if the user is logged in.
@@ -321,7 +249,7 @@ def update_post_info():
 
 @app.route("/get_comment_list", methods=["POST"])
 def get_comment_list():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
 
     post_json_data = request.get_json()
     cursor_db.execute(
@@ -342,7 +270,7 @@ def get_comment_list():
 
 @app.route("/add_comment", methods=["POST"])
 def add_comment():
-    conn_db, cursor_db = init_db()
+    conn_db, cursor_db = open_db()
 
     user_id = session.get("user_id")
     # Check if the user is logged in.
