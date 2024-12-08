@@ -22,6 +22,7 @@
 <script>
 import axios from 'axios';
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = import.meta.env.VITE_EBLOG_API_URL;
 
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 
@@ -37,7 +38,7 @@ export default {
   methods: {
     login() { 
       console.log(this.email, this.password)
-      axios.post('http://127.0.0.1:5000/login', {
+      axios.post('/login', {
         email: this.email,
         password: this.password
       })

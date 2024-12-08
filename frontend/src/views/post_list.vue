@@ -15,6 +15,7 @@
 <script>
 import axios from 'axios';
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = import.meta.env.VITE_EBLOG_API_URL;
 
 export default {
   data() {
@@ -29,7 +30,7 @@ export default {
 
   methods: {
     get_post_list() {
-      axios.post('http://127.0.0.1:5000/get_post_list')
+      axios.post('/get_post_list')
         .then(res => {
           this.post_list = res.data['post_list']
         })

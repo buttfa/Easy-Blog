@@ -9,6 +9,11 @@ import main_menu from './components/main_menu.vue'
 export default {
     components: {
         main_menu
+    },
+    provide() {
+        return {
+            language: "Chinese"
+        }
     }
 }
 </script>

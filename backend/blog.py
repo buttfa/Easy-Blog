@@ -43,12 +43,6 @@ def close_db(conn_db: Connection, cursor_db: Cursor):
         conn_db.close()
 
 
-def init_blog():
-    """First, connect to the database and initialize the tables. Secondly, check if there is blogger information in the user table. If not, request to write the relevant information."""
-    # Initialize the database and write the blogger information.
-    conn_db, cursor_db = open_db()
-    close_db(conn_db, cursor_db)
-
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -285,6 +279,3 @@ def add_comment():
     conn_db.commit()
     close_db(conn_db, cursor_db)
     return jsonify({"status": "success"})
-
-
-init_blog()

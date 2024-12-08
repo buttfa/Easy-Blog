@@ -27,6 +27,7 @@
 <script>
 import axios from 'axios';
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = import.meta.env.VITE_EBLOG_API_URL;
 
 export default {
   data() {
@@ -43,7 +44,7 @@ export default {
 
   methods: {
     get_post_info() {
-      axios.post('http://127.0.0.1:5000/get_post_info', {
+      axios.post('/get_post_info', {
         post_id: this.$route.query.post_id
       }).then(res => {
         this.title = res.data['post_info']['title'];
@@ -53,7 +54,7 @@ export default {
     },
 
     update_post_info() {
-      axios.post('http://127.0.0.1:5000/update_post_info', {
+      axios.post('/update_post_info', {
         post_id: this.$route.query.post_id,
         title: this.title,
         author: this.author,

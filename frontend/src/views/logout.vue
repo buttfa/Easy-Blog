@@ -4,6 +4,7 @@
 <script>
 import axios from 'axios';
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = import.meta.env.VITE_EBLOG_API_URL;
 
 export default {
     mounted() {
@@ -12,7 +13,7 @@ export default {
 
     methods: {
         logout() {
-            axios.post('http://127.0.0.1:5000/logout')
+            axios.post('/logout')
                 .then(res => {
                     window.location.href = "/";
                 })

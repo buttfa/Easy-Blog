@@ -21,6 +21,7 @@
 <script>
 import axios from 'axios';
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = import.meta.env.VITE_EBLOG_API_URL;
 
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 
@@ -37,7 +38,7 @@ export default {
 
   methods: {
     get_post_list() {
-      axios.post('http://127.0.0.1:5000/get_post_list')
+      axios.post('/get_post_list')
         .then(res => {
           this.post_list = res.data['post_list']
         })
@@ -52,7 +53,7 @@ export default {
     },
 
     delete_post(target_post_id) {
-      axios.post('http://127.0.0.1:5000/delete_post', {
+      axios.post('/delete_post', {
         post_id: target_post_id
       })
         .then(res => {

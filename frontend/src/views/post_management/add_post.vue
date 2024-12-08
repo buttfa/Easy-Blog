@@ -27,6 +27,7 @@
 <script>
 import axios from 'axios';
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = import.meta.env.VITE_EBLOG_API_URL;
 
 export default {
   data() {
@@ -39,7 +40,7 @@ export default {
 
   methods: {
     add_post() {
-      axios.post('http://127.0.0.1:5000/add_post', {
+      axios.post('/add_post', {
         title: this.title,
         author: this.author,
         content: this.content

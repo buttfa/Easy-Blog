@@ -222,13 +222,28 @@ def destroy_environment() -> bool:
 
 def run_frontend():
     """Run the frontend."""
-    subprocess.run("cd frontend && npx vite --port=5173", shell=True)
+    process = subprocess.Popen(
+        "curl ifconfig.me",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        shell=True,
+    )
+    server_ip, stderr = process.communicate()
+
+    with open("frontend/.env", "w") as env_dev:
+        env_dev.write(f"VITE_EBLOG_API_URL=http://{server_ip}:5000")
+
+    subprocess.run(
+        f"cd frontend && npx vite --host",
+        shell=True,
+    )
 
 
 def run_backend():
     """Run the backend."""
     subprocess.run(
-        f"bash -c 'source {venv_folder_path}/bin/activate && export FLASK_APP=backend/blog && export FLASK_ENV=development && flask run --debug && deactivate'",
+        f"bash -c 'source {venv_folder_path}/bin/activate && export FLASK_APP=backend/blog && export FLASK_ENV=development && flask run --debug --host='0.0.0.0' && deactivate'",
         shell=True,
     )
 

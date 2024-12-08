@@ -8,6 +8,7 @@
     <el-input v-model="post_comment" clearable placeholder="评论" class="comment-input" />
     <el-button @click="add_comment" type="primary">提交评论</el-button>
 
+    <hr>
     <el-card class="box-card" v-for="comment in comment_list" :key="comment['comment_id']">
       <template #header>
         <div class="card-header">
@@ -24,6 +25,7 @@
 <script>
 import axios from 'axios';
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = import.meta.env.VITE_EBLOG_API_URL;
 
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 
@@ -43,7 +45,7 @@ export default {
 
   methods: {
     get_post_info() {
-      axios.post('http://127.0.0.1:5000/get_post_info', {
+      axios.post('/get_post_info', {
         post_id: this.$route.query.post_id
       })
         .then(res => {
@@ -52,7 +54,7 @@ export default {
     },
 
     get_comment_list() {
-      axios.post('http://127.0.0.1:5000/get_comment_list', {
+      axios.post('/get_comment_list', {
         post_id: this.$route.query.post_id
       })
         .then(res => {
@@ -60,7 +62,7 @@ export default {
       })
     },
     add_comment() {
-      axios.post('http://127.0.0.1:5000/add_comment', {
+      axios.post('/add_comment', {
         post_id: this.$route.query.post_id,
         content: this.post_comment
       })

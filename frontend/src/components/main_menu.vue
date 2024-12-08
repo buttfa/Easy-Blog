@@ -42,6 +42,8 @@ import { reactive, ref } from 'vue'
 
 import axios from 'axios';
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = import.meta.env.VITE_EBLOG_API_URL;
+
 export default {
     data() {
         return {
@@ -53,18 +55,18 @@ export default {
 
     mounted() {
         this.get_blogger_info(),
-            this.get_user_info()
+        this.get_user_info()
     },
 
     methods: {
         get_blogger_info() {
-            axios.post('http://127.0.0.1:5000/get_blogger_info')
+            axios.post('/get_blogger_info')
                 .then(res => {
                     this.blogger_info = res.data['blogger_info']
                 })
         },
         get_user_info() {
-            axios.post('http://127.0.0.1:5000/get_user_info')
+            axios.post('/get_user_info')
                 .then(res => {
                     if (res.data['status'] == 'success') {
                         this.user_info = res.data['user_info']
