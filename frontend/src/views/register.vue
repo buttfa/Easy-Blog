@@ -91,7 +91,7 @@ export default {
   bottom: 0;
   right: 0;
   margin: auto auto;
-  width: 30%;
+  width: 70%;
   display: flex;
   justify-content: center;
   align-items: center;
