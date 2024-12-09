@@ -43,7 +43,6 @@ def close_db(conn_db: Connection, cursor_db: Cursor):
         conn_db.close()
 
 
-
 @app.route("/login", methods=["POST"])
 def login():
     # Connect to the database.
@@ -74,6 +73,7 @@ def get_blogger_info():
     conn_db, cursor_db = open_db()
     cursor_db.execute("select * from user where role='blogger'")
     blogger_info = cursor_db.fetchone()
+    blogger_info.pop("password")
     return jsonify({"status": "success", "blogger_info": blogger_info})
 
 
