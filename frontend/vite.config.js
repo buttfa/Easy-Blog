@@ -18,6 +18,15 @@ export default defineConfig({
     inline: false,
     // development server port 8000
     port: 8001
-  }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: '',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  },
 })
 

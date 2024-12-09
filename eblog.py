@@ -220,6 +220,27 @@ def destroy_environment() -> bool:
     return True
 
 
+def replace_line_with_prefix(file_path, old_prefix, new_line):
+    with open(file_path, "r", encoding="utf-8") as file:
+        lines = file.readlines()
+
+    modified_lines = []
+    for line in lines:
+        if line.startswith(old_prefix):
+            modified_lines.append(new_line + "\n")
+        else:
+            modified_lines.append(line)
+
+    with open(file_path, "w", encoding="utf-8") as file:
+        file.writelines(modified_lines)
+
+
+def configure_proxy(api_url):
+    replace_line_with_prefix(
+        "frontend/vite.config.js", "        target", f"        target: '{api_url}',"
+    )
+
+
 def run_frontend():
     """Run the frontend."""
     process = subprocess.Popen(
@@ -232,7 +253,9 @@ def run_frontend():
     server_ip, stderr = process.communicate()
 
     with open("frontend/.env", "w") as env_dev:
-        env_dev.write(f"VITE_EBLOG_API_URL=http://{server_ip}:5000")
+        env_dev.write(f"VITE_EBLOG_API_URL=/api")
+
+    configure_proxy(f"http://{server_ip}:5000")
 
     subprocess.run(
         f"cd frontend && npx vite --host",
