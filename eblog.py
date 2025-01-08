@@ -243,19 +243,6 @@ def configure_proxy(api_url):
 
 def run_frontend():
     """Run the frontend."""
-    process = subprocess.Popen(
-        "curl ifconfig.me",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        shell=True,
-    )
-    server_ip, stderr = process.communicate()
-
-    with open("frontend/.env", "w") as env_dev:
-        env_dev.write(f"VITE_EBLOG_API_URL=/api")
-
-    configure_proxy(f"http://{server_ip}:5000")
 
     subprocess.run(
         f"cd frontend && npx vite --host",
@@ -271,12 +258,36 @@ def run_backend():
     )
 
 
-def run_blog() -> bool:
+def run_blog(pos: str, mode: str) -> bool:
     """Run the blog.
 
     Returns:
         bool: Return False when fail to run the blog.
     """
+
+    # 
+    if pos == "local":
+        configure_proxy("http://127.0.0.1:5000")
+
+    # 
+    elif pos == "remote":
+        process = subprocess.Popen(
+            "curl ifconfig.me",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            shell=True,
+        )
+        server_ip, stderr = process.communicate()
+
+        with open("frontend/.env", "w") as env_dev:
+            env_dev.write(f"VITE_EBLOG_API_URL=/api")
+
+        configure_proxy(f"http://{server_ip}:5000")
+
+    else:
+        print("[Easy-Blog]: The position is not supported.")
+        return False
 
     thread_frontend = threading.Thread(target=run_frontend)
     thread_backend = threading.Thread(target=run_backend)
@@ -312,12 +323,19 @@ def main():
             print("[Easy-Blog]: Fail to destroy the Easy-Blog environment.")
 
     # If the command is run, run the blog.
-    elif len(sys.argv) == 2 and sys.argv[1] == "run":
+    elif len(sys.argv) >= 2 and sys.argv[1] == "run":
         print("[Easy-Blog]: Running the blog...")
-        if run_blog():
-            print("[Easy-Blog]: Succeed to run the blog.")
-        else:
-            print("[Easy-Blog]: Fail to run the blog.")
+
+        if sys.argv[2] == "--local":
+            if run_blog("local", "development"):
+                print("[Easy-Blog]: Succeed to run the blog.")
+            else:
+                print("[Easy-Blog]: Fail to run the blog.")
+        elif sys.argv[2] == "--remote":
+            if run_blog("remote", "development"):
+                print("[Easy-Blog]: Succeed to run the blog.")
+            else:
+                print("[Easy-Blog]: Fail to run the blog.")
 
     # If the command is invalid, print an error message.
     else:
