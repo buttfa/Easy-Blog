@@ -265,11 +265,11 @@ def run_blog(pos: str, mode: str) -> bool:
         bool: Return False when fail to run the blog.
     """
 
-    # 
+    # If running locally, configure the proxy IP to 127.0.0.1.
     if pos == "local":
         configure_proxy("http://127.0.0.1:5000")
 
-    # 
+    # If it is running remotely, configure the proxy IP as a public IP.
     elif pos == "remote":
         process = subprocess.Popen(
             "curl ifconfig.me",
@@ -325,17 +325,10 @@ def main():
     # If the command is run, run the blog.
     elif len(sys.argv) >= 2 and sys.argv[1] == "run":
         print("[Easy-Blog]: Running the blog...")
-
-        if sys.argv[2] == "--local":
-            if run_blog("local", "development"):
-                print("[Easy-Blog]: Succeed to run the blog.")
-            else:
-                print("[Easy-Blog]: Fail to run the blog.")
-        elif sys.argv[2] == "--remote":
-            if run_blog("remote", "development"):
-                print("[Easy-Blog]: Succeed to run the blog.")
-            else:
-                print("[Easy-Blog]: Fail to run the blog.")
+        if len(sys.argv) == 2:
+            run_blog("local", "development")
+        elif len(sys.argv) == 3:
+            run_blog(sys.argv[2], "development")
 
     # If the command is invalid, print an error message.
     else:
