@@ -15,4 +15,8 @@ def destroy_environment() -> bool:
         print("[Easy-Blog:destroy]: Fail to delete the database.")
         return False
 
+    if subprocess.run(f"rm -rf frontend/node_modules", shell=True).returncode != 0:
+        print("[Easy-Blog:destroy]: Fail to delete the node_modules.")
+        return False
+
     return True
