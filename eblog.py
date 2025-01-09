@@ -324,11 +324,23 @@ def main():
 
     # If the command is run, run the blog.
     elif len(sys.argv) >= 2 and sys.argv[1] == "run":
+
+        # The default target_pos and target_made.
+        target_pos = "local"
+        target_mode = "development"
+
+        # Update target_pos and target_made based on command-line parameters.
+        for arg in sys.argv[2:]:
+            if arg == "--local":
+                target_pos = "local"
+            elif arg == "--remote":
+                target_pos = "remote"
+            else:
+                print("[Easy-Blog]: Unknown command-line parameter: " + arg + ".")
+                exit(1)
+
         print("[Easy-Blog]: Running the blog...")
-        if len(sys.argv) == 2:
-            run_blog("local", "development")
-        elif len(sys.argv) == 3:
-            run_blog(sys.argv[2], "development")
+        run_blog(target_pos, target_mode)
 
     # If the command is invalid, print an error message.
     else:
